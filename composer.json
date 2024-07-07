@@ -1,0 +1,8 @@
+- name: Validate composer.json and composer.lock
+  run: |
+    cd path/to/your/directory # Change to the directory containing composer.json
+    if [ ! -f composer.json ]; then
+      echo "composer.json not found in the specified directory."
+      exit 1
+    fi
+    composer validate --strict

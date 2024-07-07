@@ -1,8 +1,48 @@
-- name: Validate composer.json and composer.lock
-  run: |
-    cd path/to/your/directory # Change to the directory containing composer.json
-    if [ ! -f composer.json ]; then
-      echo "composer.json not found in the specified directory."
-      exit 1
-    fi
-    composer validate --strict
+name: PHP Composer
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: List files in current directory
+      run: ls -al
+
+    - name: Debug - List all directories and files
+      run: find . -type f -print
+
+    - name: Validate composer.json and composer.lock
+      run: |
+        if [ ! -f composer.json ]; then
+          echo "composer.json not found in the root directory."
+          exit 1
+        fi
+        composer validate --strict
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    # Uncomment and configure this step if you have a test script in composer.json
+    # - name: Run test suite
+    #   run: composer run-script test
